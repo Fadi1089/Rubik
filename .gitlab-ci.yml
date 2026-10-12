@@ -1,0 +1,49 @@
+image: node:24-alpine
+
+stages:
+  - test
+  - deploy
+
+variables:
+  npm_config_cache: '$CI_PROJECT_DIR/.npm'
+
+default:
+  cache:
+    key:
+      files:
+        - package-lock.json
+    paths:
+      - .npm/
+
+# Lint, test and build on merge requests and non-default branches.
+check:
+  stage: test
+  script:
+    - npm ci
+    - npm run lint
+    - npm test
+    - npm run build
+  rules:
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+    - if: $CI_COMMIT_BRANCH && $CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH
+
+# Build and publish to GitLab Pages from the default branch.
+pages:
+  stage: deploy
+  script:
+    - npm ci
+    - npm test
+    # Serve assets from the path part of the Pages URL: "/<repo-name>/" for
+    # https://<user>.gitlab.io/<repo-name>, or "/" when the project uses a unique domain.
+    - export BASE_PATH="$(echo "$CI_PAGES_URL" | sed -E 's#^https?://[^/]+##; s#/*$#/#')"
+    - echo "Building with BASE_PATH=$BASE_PATH"
+    - npm run build
+    # GitLab Pages publishes the "public" directory. Vite's own public/ (static files) is
+    # already copied into dist/, so replace it with the build output.
+    - rm -rf public
+    - mv dist public
+  artifacts:
+    paths:
+      - public
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
