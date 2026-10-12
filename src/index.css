@@ -1,14 +1,96 @@
 @import 'tailwindcss';
 
-@theme {
-  --animate-banner-in: banner-in 360ms cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
+@custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));
 
-  @keyframes banner-in {
+/* Theme tokens. Creme is warm paper with a terracotta accent; dark is a plum-charcoal night
+   with an amber accent. Components only use the semantic names below. */
+:root,
+[data-theme='creme'] {
+  color-scheme: light;
+  --bg: #f2eadc;
+  --bg-deep: #e6dac6;
+  --ink: #2f2923;
+  --surface: #fbf6ee;
+  --line: rgb(47 41 35 / 0.12);
+  --accent: #c2603a;
+  --accent-ink: #fff7ee;
+  --good: #4b7a4a;
+  --blob-a: #f3c4a0;
+  --blob-b: #c7d6b3;
+  --blob-c: #efd9a3;
+  --grain-opacity: 0.09;
+}
+
+[data-theme='dark'] {
+  color-scheme: dark;
+  --bg: #16141b;
+  --bg-deep: #0e0d12;
+  --ink: #efe6d6;
+  --surface: #24212b;
+  --line: rgb(239 230 214 / 0.1);
+  --accent: #eaa86a;
+  --accent-ink: #20170d;
+  --good: #a3d39d;
+  --blob-a: #43284d;
+  --blob-b: #163a3b;
+  --blob-c: #4d3220;
+  --grain-opacity: 0.06;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-bg-deep: var(--bg-deep);
+  --color-ink: var(--ink);
+  --color-surface: var(--surface);
+  --color-line: var(--line);
+  --color-accent: var(--accent);
+  --color-accent-ink: var(--accent-ink);
+  --color-good: var(--good);
+}
+
+@theme {
+  --font-display: 'Fraunces', Georgia, serif;
+  --font-sans: 'Recursive', ui-sans-serif, system-ui, sans-serif;
+
+  --animate-rise: rise 520ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  --animate-drift-a: drift-a 42s ease-in-out infinite alternate;
+  --animate-drift-b: drift-b 51s ease-in-out infinite alternate;
+  --animate-drift-c: drift-c 60s ease-in-out infinite alternate;
+
+  @keyframes rise {
     from {
       opacity: 0;
-      transform: translateY(-8px) scale(0.96);
+      transform: translateY(10px);
     }
   }
+  @keyframes drift-a {
+    to {
+      transform: translate(12vw, 8vh) scale(1.15);
+    }
+  }
+  @keyframes drift-b {
+    to {
+      transform: translate(-10vw, -6vh) scale(0.9);
+    }
+  }
+  @keyframes drift-c {
+    to {
+      transform: translate(-6vw, 10vh) scale(1.1);
+    }
+  }
+}
+
+/* Recursive's monospace, casual cut: for the timer and key caps. */
+@utility mono {
+  font-variation-settings:
+    'MONO' 1,
+    'CASL' 1;
+}
+
+/* Fraunces with its soft, rounded terminals turned all the way up. */
+@utility display-soft {
+  font-family: var(--font-display);
+  font-variation-settings: 'SOFT' 100;
 }
 
 @layer base {
@@ -21,9 +103,28 @@
   body {
     margin: 0;
     overflow: hidden;
-    background: #0b0d12;
-    color: white;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    font-variation-settings: 'CASL' 0.5;
     -webkit-font-smoothing: antialiased;
     user-select: none;
+    transition:
+      background-color 500ms ease,
+      color 500ms ease;
+  }
+
+  button {
+    cursor: pointer;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }

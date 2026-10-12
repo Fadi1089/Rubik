@@ -1,77 +1,63 @@
-import { formatAlgorithm } from '../cube'
 import { useGameStore } from '../store/useGameStore'
 import { ControlBar } from './ControlBar'
-import { formatTime } from './formatTime'
+import { GuideBubble } from './GuideBubble'
+import { GuidesToggle } from './GuidesToggle'
+import { KeyLegend } from './KeyLegend'
 import { SolvedBanner } from './SolvedBanner'
+import { ThemeToggle } from './ThemeToggle'
 import { Timer } from './Timer'
 
-function Stat({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex flex-col items-end">
-      <span className="text-[11px] font-medium tracking-wider text-white/40 uppercase">
-        {label}
-      </span>
-      <span className="font-mono text-lg font-semibold text-white tabular-nums">{value}</span>
-    </div>
-  )
-}
-
 export function HUD() {
-  const moves = useGameStore((s) => s.history.length)
-  const bestTimeMs = useGameStore((s) => s.bestTimeMs)
-  const scramble = useGameStore((s) => s.scramble)
+  const guiding = useGameStore((s) => s.guide !== null)
 
   return (
-    <div className="pointer-events-none absolute inset-0 flex flex-col justify-between p-4 sm:p-6">
-      <div className="flex flex-col items-center gap-4">
-        <header className="grid w-full grid-cols-[1fr_auto_1fr] items-start gap-4">
-          <div className="min-w-0">
-            <h1 className="text-sm font-semibold tracking-tight text-white">Rubik’s Cube</h1>
-            {scramble.length > 0 && (
-              <p
-                className="mt-1 hidden max-w-xs font-mono text-[11px] leading-relaxed break-words text-white/40 md:block"
-                title="Scramble"
-              >
-                {formatAlgorithm(scramble)}
-              </p>
-            )}
+    <div
+      data-hud
+      className="@container pointer-events-none absolute inset-0 flex flex-col justify-between p-4 @lg:p-7"
+    >
+      <div className="flex flex-col items-center gap-5">
+        <header className="grid w-full grid-cols-[1fr_auto_1fr] items-start gap-3">
+          <div className="min-w-0 animate-rise">
+            <h1 className="display-soft sr-only text-xl leading-tight whitespace-nowrap text-ink italic @2xl:not-sr-only @4xl:text-2xl">
+              Rubik’s Cube
+            </h1>
           </div>
-          <Timer />
-          <div className="flex justify-end gap-5">
-            <Stat label="Moves" value={String(moves)} />
-            <Stat label="Best" value={bestTimeMs === null ? '–' : formatTime(bestTimeMs)} />
+          <div className="animate-rise [animation-delay:80ms]">
+            <Timer />
+          </div>
+          <div
+            data-ui
+            className="pointer-events-auto flex animate-rise justify-end gap-2 [animation-delay:160ms]"
+          >
+            <GuidesToggle />
+            <ThemeToggle />
           </div>
         </header>
         <SolvedBanner />
       </div>
 
-      <footer className="flex flex-col items-center gap-3">
-        <div className="pointer-events-auto">
-          <ControlBar />
+      {/* The tutor's bubble stays out of the cube's way: beside it on wide stages, as a compact
+          card above the bottom bar on narrow ones. */}
+      <div className="absolute inset-x-4 bottom-28 flex justify-center @lg:bottom-32 @4xl:inset-x-auto @4xl:top-1/2 @4xl:bottom-auto @4xl:left-7 @4xl:-translate-y-1/2">
+        <GuideBubble />
+      </div>
+
+      <footer className="relative flex items-end justify-center">
+        <div
+          className={`absolute bottom-0 left-0 hidden animate-rise [animation-delay:320ms] ${guiding ? '' : '@4xl:block'}`}
+        >
+          <KeyLegend />
         </div>
-        <p className="hidden text-center text-xs text-white/40 sm:block">
-          Drag a face to turn it · <Keys keys="U D L R F B" /> turn clockwise, hold{' '}
-          <Keys keys="Shift" /> for prime · drag the background to look around
-        </p>
-        <p className="text-center text-xs text-white/40 sm:hidden">
-          Drag a face to turn it · drag the background to look around
-        </p>
+        <div className="flex flex-col items-center gap-3">
+          <div data-ui className="pointer-events-auto animate-rise [animation-delay:240ms]">
+            <ControlBar />
+          </div>
+          <p className="text-center text-xs text-ink/45">
+            drag a face to turn it
+            <span className="hidden @lg:inline"> · drag anywhere else to look around</span>
+          </p>
+        </div>
       </footer>
     </div>
-  )
-}
-
-function Keys({ keys }: { keys: string }) {
-  return (
-    <span className="inline-flex gap-0.5">
-      {keys.split(' ').map((key) => (
-        <kbd
-          key={key}
-          className="rounded bg-white/10 px-1 py-px font-mono text-[11px] text-white/70"
-        >
-          {key}
-        </kbd>
-      ))}
-    </span>
   )
 }

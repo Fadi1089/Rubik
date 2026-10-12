@@ -1,5 +1,5 @@
 import { isSolved } from '../cube'
-import { useGameStore } from '../store/useGameStore'
+import { countMoves, useGameStore } from '../store/useGameStore'
 import { formatTime } from './formatTime'
 
 export function SolvedBanner() {
@@ -7,8 +7,9 @@ export function SolvedBanner() {
     (s) => s.status === 'solved' && s.queue.length === 0 && isSolved(s.cube),
   )
   const finalTimeMs = useGameStore((s) => s.finalTimeMs)
-  const moves = useGameStore((s) => s.history.length)
+  const moves = useGameStore((s) => countMoves(s.history))
   const isNewBest = useGameStore((s) => s.isNewBest)
+  const assisted = useGameStore((s) => s.assisted)
   const startScramble = useGameStore((s) => s.startScramble)
 
   if (!visible || finalTimeMs === null) return null
@@ -16,27 +17,25 @@ export function SolvedBanner() {
   return (
     <div
       role="status"
-      className="animate-banner-in pointer-events-auto flex items-center gap-4 rounded-2xl bg-emerald-400/12 py-3 pr-3 pl-5 ring-1 ring-emerald-300/30 backdrop-blur-md"
+      data-ui
+      className="animate-rise pointer-events-auto flex items-center gap-5 rounded-full border border-line bg-surface/75 py-2 pr-2 pl-6 shadow-[0_18px_50px_-24px_rgb(0_0_0/0.45)] backdrop-blur-xl"
     >
-      <div>
-        <p className="text-sm font-semibold text-emerald-200">
-          Solved in {formatTime(finalTimeMs)}
-          {isNewBest && (
-            <span className="ml-2 rounded-full bg-amber-300 px-2 py-0.5 text-[11px] font-bold tracking-wide text-amber-950 uppercase">
-              New best
-            </span>
-          )}
-        </p>
-        <p className="text-xs text-emerald-100/60">
-          {moves} {moves === 1 ? 'move' : 'moves'}
-        </p>
-      </div>
+      <p className="text-sm text-ink/70">
+        <span className="display-soft mr-2 text-lg text-ink italic">nicely done.</span>
+        {formatTime(finalTimeMs)} in {moves} {moves === 1 ? 'move' : 'moves'}
+        {assisted && <span className="ml-2 text-ink/50">with a hint</span>}
+        {isNewBest && (
+          <span className="ml-2.5 rounded-full bg-good/15 px-2 py-0.5 text-[11px] font-semibold text-good">
+            new best
+          </span>
+        )}
+      </p>
       <button
         type="button"
         onClick={() => startScramble()}
-        className="rounded-xl bg-emerald-300 px-3.5 py-2 text-sm font-semibold text-emerald-950 transition hover:bg-emerald-200 focus-visible:ring-2 focus-visible:ring-emerald-100 focus-visible:outline-none"
+        className="rounded-full bg-accent px-4 py-2 text-sm font-semibold text-accent-ink transition hover:brightness-105 focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-surface focus-visible:outline-none active:scale-[0.96]"
       >
-        Again
+        another
       </button>
     </div>
   )

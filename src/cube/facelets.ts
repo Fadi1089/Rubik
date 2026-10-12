@@ -35,6 +35,15 @@ export function stickerNormals(home: Vec3): Vec3[] {
   return normals
 }
 
+/** Index (0..53, URFDLB order) of the sticker at `position` facing along `normal`. */
+export function faceletIndex(position: Vec3, normal: Vec3): number {
+  const face = faceForNormal(normal)
+  const frame = FACE_FRAMES[face]
+  const row = dot(position, frame.down) + 1
+  const col = dot(position, frame.right) + 1
+  return FACE_ORDER.indexOf(face) * 9 + row * 3 + col
+}
+
 /**
  * Project the cubie model onto the 54 visible stickers. Each entry is the face colour of the
  * sticker at that slot, so a solved cube reads "UUUUUUUUURRRRRRRRRFFF...".
@@ -43,11 +52,8 @@ export function toFacelets(state: CubeState): Face[] {
   const facelets = new Array<Face>(54)
   for (const cubie of state) {
     for (const homeNormal of stickerNormals(cubie.home)) {
-      const face = faceForNormal(transform(cubie.orientation, homeNormal))
-      const frame = FACE_FRAMES[face]
-      const row = dot(cubie.position, frame.down) + 1
-      const col = dot(cubie.position, frame.right) + 1
-      facelets[FACE_ORDER.indexOf(face) * 9 + row * 3 + col] = faceForNormal(homeNormal)
+      const normal = transform(cubie.orientation, homeNormal)
+      facelets[faceletIndex(cubie.position, normal)] = faceForNormal(homeNormal)
     }
   }
   return facelets

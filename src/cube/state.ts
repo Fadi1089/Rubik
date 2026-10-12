@@ -27,8 +27,10 @@ export function createSolvedCube(): CubeState {
   return cubies
 }
 
-export function isInLayer(cubie: Cubie, turn: Pick<AxisTurn, 'axis' | 'layer'>): boolean {
-  return cubie.position[axisIndex(turn.axis)] === turn.layer
+export function isInLayer(cubie: Cubie, turn: Pick<AxisTurn, 'axis' | 'layer' | 'wide'>): boolean {
+  if (turn.layer === null) return true
+  const coord = cubie.position[axisIndex(turn.axis)]
+  return coord === turn.layer || (turn.wide === true && coord === 0)
 }
 
 export function applyAxisTurn(state: CubeState, turn: AxisTurn): CubeState {

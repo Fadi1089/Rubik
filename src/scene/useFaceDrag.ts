@@ -1,6 +1,6 @@
 import { useThree, type ThreeEvent } from '@react-three/fiber'
-import { useCallback, useEffect, useRef } from 'react'
-import { Vector3, type Camera } from 'three'
+import { useCallback, useEffect, useRef, type RefObject } from 'react'
+import { Vector3, type Camera, type Group } from 'three'
 import { AXES, axisIndex, moveFromAxisTurn, type Axis, type Move } from '../cube'
 import { DRAG_THRESHOLD_PX, SPACING } from './constants'
 
@@ -10,6 +10,8 @@ interface DragState {
   startY: number
   /** World-space point where the drag started, on the cube's surface. */
   point: Vector3
+  /** The same point in the cube's own frame, where cubie centres sit on whole numbers. */
+  local: Vector3
   normalAxis: Axis
   normalSign: 1 | -1
   resolved: boolean
@@ -58,7 +60,7 @@ export function resolveDrag(camera: Camera, drag: DragState, dx: number, dy: num
 
   const rotationAxis = AXES.find((a) => Math.abs(rotation.getComponent(axisIndex(a))) > 0.5)!
   const quarters = Math.sign(rotation.getComponent(axisIndex(rotationAxis))) as 1 | -1
-  const coord = Math.round(drag.point.getComponent(axisIndex(rotationAxis)) / SPACING)
+  const coord = Math.round(drag.local.getComponent(axisIndex(rotationAxis)) / SPACING)
   const layer = Math.max(-1, Math.min(1, coord)) as -1 | 0 | 1
 
   return moveFromAxisTurn(rotationAxis, layer, quarters)
@@ -68,7 +70,7 @@ export function resolveDrag(camera: Camera, drag: DragState, dx: number, dy: num
  * Returns a pointer-down handler for the cube. While a face drag is in progress the orbit
  * controls are disabled, and each drag produces at most one move.
  */
-export function useFaceDrag(onMove: (move: Move) => void) {
+export function useFaceDrag(onMove: (move: Move) => void, cube: RefObject<Group | null>) {
   const get = useThree((state) => state.get)
   const drag = useRef<DragState | null>(null)
   const cleanup = useRef<(() => void) | null>(null)
@@ -80,11 +82,13 @@ export function useFaceDrag(onMove: (move: Move) => void) {
       if (event.button !== 0 || drag.current) return
       event.stopPropagation()
 
-      // The cube itself never rotates (the camera orbits), so the face that was hit is
-      // simply the axis along which the hit point sticks out furthest.
+      // The cube group only floats and scales; it never rotates (the camera orbits, and whole-cube
+      // rotations live in the model). So the face that was hit is the axis along which the
+      // local hit point sticks out furthest.
       const point = event.point.clone()
+      const local = cube.current ? cube.current.worldToLocal(point.clone()) : point.clone()
       const normalAxis = AXES.reduce((a, b) =>
-        Math.abs(point.getComponent(axisIndex(b))) > Math.abs(point.getComponent(axisIndex(a)))
+        Math.abs(local.getComponent(axisIndex(b))) > Math.abs(local.getComponent(axisIndex(a)))
           ? b
           : a,
       )
@@ -93,8 +97,9 @@ export function useFaceDrag(onMove: (move: Move) => void) {
         startX: event.clientX,
         startY: event.clientY,
         point,
+        local,
         normalAxis,
-        normalSign: point.getComponent(axisIndex(normalAxis)) >= 0 ? 1 : -1,
+        normalSign: local.getComponent(axisIndex(normalAxis)) >= 0 ? 1 : -1,
         resolved: false,
       }
 
@@ -129,6 +134,6 @@ export function useFaceDrag(onMove: (move: Move) => void) {
       window.addEventListener('pointerup', handleUp)
       window.addEventListener('pointercancel', handleUp)
     },
-    [get, onMove],
+    [get, onMove, cube],
   )
 }

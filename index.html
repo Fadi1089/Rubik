@@ -1,15 +1,32 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="creme">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta
       name="description"
       content="An interactive 3D Rubik's cube you can turn, scramble and solve."
     />
-    <meta name="theme-color" content="#0b0d12" />
+    <meta name="theme-color" content="#f2eadc" />
     <title>Rubik's Cube</title>
+    <script>
+      // Apply the saved theme before first paint so the page doesn't flash.
+      try {
+        var saved = JSON.parse(localStorage.getItem('rubik:ui') || '{}').state
+        var theme = saved && saved.theme
+        if (theme !== 'dark' && theme !== 'creme')
+          theme = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'creme'
+        document.documentElement.dataset.theme = theme
+      } catch (e) {}
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT@0,9..144,300..700,0..100;1,9..144,300..700,0..100&family=Recursive:slnt,wght,CASL,MONO@-15..0,300..800,0..1,0..1&display=swap"
+    />
   </head>
   <body>
     <div id="root"></div>

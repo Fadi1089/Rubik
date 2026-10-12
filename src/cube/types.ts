@@ -9,8 +9,18 @@ export type Mat3 = readonly [number, number, number, number, number, number, num
 /** The six outer faces, also used as sticker colour identities (a sticker is "the U colour"). */
 export type Face = 'U' | 'D' | 'L' | 'R' | 'F' | 'B'
 
-/** Faces plus the three slice layers (M follows L, E follows D, S follows F). */
-export type MoveFace = Face | 'M' | 'E' | 'S'
+/** Whole-cube rotations: x follows R, y follows U, z follows F. */
+export type Rotation = 'x' | 'y' | 'z'
+
+/** Wide (two-layer) turns: an outer face plus the middle layer next to it. `r` is R and M'. */
+export type WideFace = 'u' | 'd' | 'l' | 'r' | 'f' | 'b'
+
+/** Faces, wide turns, the three slice layers (M follows L, E follows D, S follows F) and the
+ * rotations. */
+export type MoveFace = Face | WideFace | 'M' | 'E' | 'S' | Rotation
+
+/** Which layer an axis turn moves: a coordinate on the axis, or `null` for the whole cube. */
+export type Layer = -1 | 0 | 1 | null
 
 /** 1 = clockwise quarter turn, -1 = prime (anticlockwise), 2 = half turn. */
 export type MoveAmount = 1 | -1 | 2
@@ -24,8 +34,10 @@ export interface Move {
  * counter-clockwise when looking from the positive end of the axis (right-hand rule). */
 export interface AxisTurn {
   readonly axis: Axis
-  readonly layer: -1 | 0 | 1
+  readonly layer: Layer
   readonly quarters: number
+  /** Also turn the middle layer (layer 0) along with `layer`. */
+  readonly wide?: boolean
 }
 
 export interface Cubie {
