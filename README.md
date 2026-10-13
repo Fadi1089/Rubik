@@ -4,6 +4,8 @@
 
 # Rubik's Cube
 
+<p align="center"><a href="https://fadi1089.github.io/Rubik/"><strong>▶ Play it in your browser</strong></a></p>
+
 A 3D Rubik's cube for the browser that also teaches you to solve it. Turn layers by dragging or from the keyboard, race the timer, or let the guided solve walk you through the layer-by-layer method one move at a time.
 
 ![A guided solve in the creme theme: the tutor's bubble explains the next move, the pieces involved glow and an arrow shows the turn](docs/screenshot-guided-solve.webp)
@@ -177,6 +179,12 @@ Assets are built for the base path in the `BASE_PATH` environment variable, defa
 ```bash
 BASE_PATH=/my-cube/ npm run build
 ```
+
+## Deploy to GitHub Pages
+
+The live site at <https://fadi1089.github.io/Rubik/> is built by `.github/workflows/pages.yml` on every push to `main`. The workflow installs dependencies, lints, runs the tests, builds with the base path GitHub Pages reports (`/Rubik/` here, `/` on a custom domain) and deploys `dist/`. You can also start it by hand from the Actions tab.
+
+For a fork, enable Pages once under **Settings → Pages → Build and deployment → Source: GitHub Actions**, then push to `main`.
 
 ## Deploy to GitLab Pages
 
